@@ -1,7 +1,6 @@
 """Definitions for Signed Distance Fields"""
 import numpy as np
 
-
 def signed_distance_sphere(x, y, z, r, x_0, y_0, z_0):
     """
     Returns the signed distance value of a given point (x, y, z) from the surface of a sphere of radius r, centered at (x_0, y_0, z_0)
@@ -15,8 +14,9 @@ def signed_distance_sphere(x, y, z, r, x_0, y_0, z_0):
     :return: signed distance from the surface of the sphere
     """
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+
+    return np.sqrt(np.square(x - x_0) + np.square(y - y_0) + np.square(z - z_0)) - r
+
     # ###############
 
 
@@ -34,8 +34,9 @@ def signed_distance_torus(x, y, z, R, r, x_0, y_0, z_0):
     :return: signed distance from the surface of the torus
     """
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+    a = np.sqrt(np.square(x - x_0) + np.square(z - z_0)) - R
+    return np.sqrt(np.square(a) + np.square(y - y_0)) - r
+    
     # ###############
 
 
@@ -54,6 +55,10 @@ def signed_distance_atom(x, y, z):
     electron_center = (orbit_radius, 0, 0)
     electron_radius = 0.05
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+
+    proton = signed_distance_sphere(x, y, z, proton_radius, proton_center[0], proton_center[1], proton_center[2])
+    orbit = signed_distance_torus(x, y, z, orbit_radius, orbit_thickness, proton_center[0], proton_center[1], proton_center[2])
+    electron = signed_distance_sphere(x, y, z, electron_radius, electron_center[0], electron_center[1], electron_center[2])
+    return np.minimum(np.minimum(proton, orbit), electron)
+    
     # ###############
