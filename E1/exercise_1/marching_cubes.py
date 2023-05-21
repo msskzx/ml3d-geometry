@@ -135,6 +135,28 @@ triangle_table = [
     [8, 3, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 ]
 
+def edge_to_corners(edge: int) -> list:
+    """
+    both corner points of each edge
+    edge vertex 8 => corner point 0, 4
+    :param edge: edge index
+    :return: tuple containing both corners connected to the edge
+    """
+    edge_to_corners = [
+        [1, 3],
+        [1, 2],
+        [0, 3],
+        [4, 5],
+        [5, 6],
+        [6, 7],
+        [4, 7],
+        [0, 4],
+        [1, 5],
+        [2, 6],
+        [3, 7]
+    ]
+    return edge_to_corners[edge]
+
 
 def compute_cube_index(cube: np.array, isolevel=0.) -> int:
     """
@@ -149,12 +171,24 @@ def compute_cube_index(cube: np.array, isolevel=0.) -> int:
     """
 
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+    result = ""
+    for i, sdf in enumerate(cube):
+        if sdf < isolevel:
+            result = "1" + result
+        else:
+            result = "0" + result
+    return int(result, 2)
+    """
+    index = 0
+    for i, sdf in enumerate(cube):
+        if sdf < isolevel:
+            index |= 1 << i
+    return index
+    """
     # ###############
 
 
-def marching_cubes(sdf: np.array) -> tuple:
+def marching_cubes(sdf: np.array, triangle_table) -> tuple:
     """
     Implements Marching Cubes. Using the incoming sdf grid, do the following for each cube:
     1. Compute cube index
@@ -165,8 +199,20 @@ def marching_cubes(sdf: np.array) -> tuple:
     """
 
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+    cube_index = compute_cube_index(sdf)
+    triangles = triangle_table[cube_index]
+    vertex_list = []
+    for i in range(0, len(triangles)):
+        if (triangles[i] == -1):
+            continue
+        
+        # get corners of edge
+        corner1, corner2 = edge_to_corners(triangles[i])
+
+        # save to global vertix list
+        vertex_list.append(vertex_interpolation(corner1, corner1, sdf[-corner1], sdf[-corner2]))
+
+    return vertex_list, [x for x in triangles if x != -1]
     # ###############
 
 
@@ -180,4 +226,5 @@ def vertex_interpolation(p_1, p_2, v_1, v_2, isovalue=0.):
     :param isovalue: The iso value, always 0 in our case
     :return: A single point
     """
-    return p_1 + (p_2 - p_1) / 2.
+    # p_1 + (p_2 - p_1) / 2.
+    return p_1 * v_1 + (p_2 - p_1) * (v_2 - v_1) / 2.

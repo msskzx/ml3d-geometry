@@ -13,6 +13,17 @@ def sdf_grid(sdf_function, resolution):
     """
 
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+    grid = np.zeros((resolution, resolution, resolution))
+    center = (resolution - 1) / 2.0
+    voxel_size = 1.0 / (resolution - 1)
+
+    for i in range(0, resolution):
+        for j in range(0, resolution):
+            for k in range(0, resolution):
+                x = (i - center) * voxel_size
+                y = (j - center) * voxel_size
+                z = (k - center) * voxel_size
+                grid[i, j, k] = sdf_function(x, y, z)
+                
+    return grid
     # ###############
