@@ -135,22 +135,11 @@ TRIANGLE_TABLE = [
     [8, 3, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 ]
 
-CORNERS = np.array([
-        [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],
-        [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]])
-EDGE_TO_CORNERS = [
-        [1, 3],
-        [1, 2],
-        [0, 3],
-        [4, 5],
-        [5, 6],
-        [6, 7],
-        [4, 7],
-        [0, 4],
-        [1, 5],
-        [2, 6],
-        [3, 7]
-    ]
+CORNERS = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], # bottom corners
+                    [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]]) # top corners
+EDGE_TO_CORNERS = [[0, 1], [1, 2], [2, 3], [3, 0], # bottom corners
+                   [4, 5], [5, 6], [6, 7], [7, 4], # top corners
+                   [0, 4], [1, 5], [2, 6], [3, 7]] # vertical edges
 LEN_CORNERS = len(EDGE_TO_CORNERS)
 
 def edge_to_corners(edge_idx: int) -> list:
@@ -191,8 +180,9 @@ def vertex_interpolation(p_1, p_2, v_1, v_2, isovalue=0.):
     :param isovalue: The iso value, always 0 in our case
     :return: A single point
     """
-    # p_1 + (p_2 - p_1) / 2.
-    return p_1 * v_1 + (p_2 - p_1) * (v_2 - v_1) / 2.
+    #return  p_1 + (p_2 - p_1) / 2.
+    # TODO explain
+    return p_1 + (isovalue - v_1) * (p_2 - p_1) / (v_2 - v_1)
 
 def marching_cubes(sdf: np.array) -> tuple:
     """
@@ -206,10 +196,11 @@ def marching_cubes(sdf: np.array) -> tuple:
 
     # ###############
     
-    global_triangles = global_vertices = triangles = vertices = []
+    global_triangles = []
+    global_vertices = []
 
-    # join arrays along a new axis
     # TODO explain
+    # join arrays along a new axis
     # cubes contains all combinations in the form [x, y, z] with range 0 : length - 1
     cubes = np.stack(np.meshgrid(range(sdf.shape[0] - 1), range(sdf.shape[1] - 1), range(sdf.shape[2] - 1))).transpose(0, 2, 1, 3).reshape(3, -1).T
     
@@ -218,16 +209,11 @@ def marching_cubes(sdf: np.array) -> tuple:
         sdf_values = sdf[tuple((cube + CORNERS).T)]
         cube_index = compute_cube_index(sdf_values)
 
-        for edge_idx in range(LEN_CORNERS):
-            if edge_idx in TRIANGLE_TABLE[cube_index]:
-                # get corners of current edge
-                corner1, corner2 = edge_to_corners(edge_idx)
-                # get sdf values for corners
-                corner1_sdf = sdf[tuple((cube + corner1).T)]
-                corner2_sdf = sdf[tuple((cube + corner2).T)]
-                vertices.append(cube + vertex_interpolation(p_1=corner1, p_2=corner2, v_1=corner1_sdf, v_2=corner2_sdf))
-            else:
-                 vertices.append(None)
+        vertices = [cube + vertex_interpolation(p_1=edge_to_corners(edge_idx)[0],
+                                                p_2=edge_to_corners(edge_idx)[1],
+                                                v_1=sdf[tuple((cube + edge_to_corners(edge_idx)[0]).T)],
+                                                v_2=sdf[tuple((cube + edge_to_corners(edge_idx)[1]).T)])
+                    if edge_idx in TRIANGLE_TABLE[cube_index] else None for edge_idx in range(LEN_CORNERS)]
 
         # TODO Explain
         triangle_indices = np.array(TRIANGLE_TABLE[cube_index])
