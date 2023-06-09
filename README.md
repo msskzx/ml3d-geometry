@@ -17,6 +17,15 @@ Given a point calculate the SDF function for:
 ### Conversion from SDF Grids to Occupancy Grids
 ### Conversion From SDF to Triangle Meshes
 - Marching Cubes
+
+Sphere            |  Torus
+:-------------------------:|:-------------------------:
+![sphere](./E1/images/marching-cubes-sphere.png) | ![sphere](./E1/images/marching-cubes-torus.png)
+
+Atom            |  MLP
+:-------------------------:|:-------------------------:
+![sphere](./E1/images/marching-cubes-atom.png) | ![sphere](./E1/images/marching-cubes-mlp.png)
+
 - Vertex Interpolation
 - Export triangle meshes as `Wavefront OJB`
 ### Conversion from Triangle Meshes to Point Clouds
