@@ -13,17 +13,18 @@ def occupancy_grid(sdf_function, resolution):
     """
 
     # ###############
-    grid = np.zeros((resolution, resolution, resolution))
-    center = (resolution - 1) / 2.0
-    voxel_size = 1.0 / (resolution - 1)
+    # get evenly spaced numbers over the interval, used as coordinate vectors
+    x_range = y_range = z_range = np.linspace(-0.5, 0.5, resolution)
 
-    for i in range(0, resolution):
-        for j in range(0, resolution):
-            for k in range(0, resolution):
-                x = (i - center) * voxel_size
-                y = (j - center) * voxel_size
-                z = (k - center) * voxel_size
-                grid[i, j, k] = 1 if sdf_function(x, y, z) <= 0 else 0
-                
-    return grid
+    # get coordinate matrices from coordinate vectors
+    grid_x, grid_y, grid_z = np.meshgrid(x_range, y_range, z_range, indexing='ij')
+    grid_x, grid_y, grid_z = grid_x.flatten(), grid_y.flatten(), grid_z.flatten()
+
+    # apply sdf function to the grid
+    sdf_grid = sdf_function(grid_x, grid_y, grid_z).reshape((resolution, resolution, resolution))
+
+    # get occupancy grid from sdf grid, occupied if has negative value
+    occupancy_grid = sdf_grid < 0
+
+    return occupancy_grid
     # ###############

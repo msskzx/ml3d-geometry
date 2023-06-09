@@ -4,7 +4,7 @@ import numpy as np
 # This table contains the triangle configuration for each of the 256 possible cube configurations.
 # Each configuration contains at most 15 entries which corresponds to 5 triangles, each with 3 edge indices
 # -1 is used as a place holder and should be discarded in your implementation
-triangle_table = [
+TRIANGLE_TABLE = [
     [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], [3, 8, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
     [9, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], [1, 8, 9, 3, 8, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
     [10, 2, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], [10, 2, 1, 3, 8, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -135,14 +135,10 @@ triangle_table = [
     [8, 3, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 ]
 
-def edge_to_corners(edge: int) -> list:
-    """
-    both corner points of each edge
-    edge vertex 8 => corner point 0, 4
-    :param edge: edge index
-    :return: tuple containing both corners connected to the edge
-    """
-    edge_to_corners = [
+CORNERS = np.array([
+        [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],
+        [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]])
+EDGE_TO_CORNERS = [
         [1, 3],
         [1, 2],
         [0, 3],
@@ -155,8 +151,15 @@ def edge_to_corners(edge: int) -> list:
         [2, 6],
         [3, 7]
     ]
-    return edge_to_corners[edge]
+LEN_CORNERS = len(EDGE_TO_CORNERS)
 
+def edge_to_corners(edge_idx: int) -> list:
+    """
+    e.g. edge_idx vertex 8 => corner point 0, 4
+    :param edge_idx: edge_idx index
+    :return: tuple containing both corners connected to the edge_idx
+    """
+    return CORNERS[EDGE_TO_CORNERS[edge_idx][0]], CORNERS[EDGE_TO_CORNERS[edge_idx][1]]
 
 def compute_cube_index(cube: np.array, isolevel=0.) -> int:
     """
@@ -171,50 +174,12 @@ def compute_cube_index(cube: np.array, isolevel=0.) -> int:
     """
 
     # ###############
-    result = ""
-    for i, sdf in enumerate(cube):
-        if sdf < isolevel:
-            result = "1" + result
-        else:
-            result = "0" + result
-    return int(result, 2)
-    """
     index = 0
     for i, sdf in enumerate(cube):
         if sdf < isolevel:
             index |= 1 << i
     return index
-    """
     # ###############
-
-
-def marching_cubes(sdf: np.array, triangle_table) -> tuple:
-    """
-    Implements Marching Cubes. Using the incoming sdf grid, do the following for each cube:
-    1. Compute cube index
-    2. Compute vertex locations for each vertex defined in the triangle_table entry corresponding to the current cube index. Use vertex_interpolation for that
-    3. Add these together with the triangles to a global vertex and triangle list and return them
-    :param sdf: A cubic, regular grid containing SDF values
-    :return: A tuple with (1) a numpy array of vertices (nx3) and (2) a numpy array of faces (mx3)
-    """
-
-    # ###############
-    cube_index = compute_cube_index(sdf)
-    triangles = triangle_table[cube_index]
-    vertex_list = []
-    for i in range(0, len(triangles)):
-        if (triangles[i] == -1):
-            continue
-        
-        # get corners of edge
-        corner1, corner2 = edge_to_corners(triangles[i])
-
-        # save to global vertix list
-        vertex_list.append(vertex_interpolation(corner1, corner1, sdf[-corner1], sdf[-corner2]))
-
-    return vertex_list, [x for x in triangles if x != -1]
-    # ###############
-
 
 def vertex_interpolation(p_1, p_2, v_1, v_2, isovalue=0.):
     """
@@ -228,3 +193,49 @@ def vertex_interpolation(p_1, p_2, v_1, v_2, isovalue=0.):
     """
     # p_1 + (p_2 - p_1) / 2.
     return p_1 * v_1 + (p_2 - p_1) * (v_2 - v_1) / 2.
+
+def marching_cubes(sdf: np.array) -> tuple:
+    """
+    Implements Marching Cubes. Using the incoming sdf grid, do the following for each cube:
+    1. Compute cube index
+    2. Compute vertex locations for each vertex defined in the TRIANGLE_TABLE entry corresponding to the current cube index. Use vertex_interpolation for that
+    3. Add these together with the triangles to a global vertex and triangle list and return them
+    :param sdf: A cubic, regular grid containing SDF values
+    :return: A tuple with (1) a numpy array of vertices (nx3) and (2) a numpy array of faces (mx3)
+    """
+
+    # ###############
+    
+    global_triangles = global_vertices = triangles = vertices = []
+
+    # join arrays along a new axis
+    # TODO explain
+    # cubes contains all combinations in the form [x, y, z] with range 0 : length - 1
+    cubes = np.stack(np.meshgrid(range(sdf.shape[0] - 1), range(sdf.shape[1] - 1), range(sdf.shape[2] - 1))).transpose(0, 2, 1, 3).reshape(3, -1).T
+    
+    for _, cube in enumerate(cubes):
+        # TODO expalin
+        sdf_values = sdf[tuple((cube + CORNERS).T)]
+        cube_index = compute_cube_index(sdf_values)
+
+        for edge_idx in range(LEN_CORNERS):
+            if edge_idx in TRIANGLE_TABLE[cube_index]:
+                # get corners of current edge
+                corner1, corner2 = edge_to_corners(edge_idx)
+                # get sdf values for corners
+                corner1_sdf = sdf[tuple((cube + corner1).T)]
+                corner2_sdf = sdf[tuple((cube + corner2).T)]
+                vertices.append(cube + vertex_interpolation(p_1=corner1, p_2=corner2, v_1=corner1_sdf, v_2=corner2_sdf))
+            else:
+                 vertices.append(None)
+
+        # TODO Explain
+        triangle_indices = np.array(TRIANGLE_TABLE[cube_index])
+        triangles = triangle_indices[triangle_indices > -1].reshape(-1, 3)
+        num_vertices = len(global_vertices)
+        for triangle_idx, triangle in enumerate (triangles):
+            global_triangles.append(np.array([num_vertices * 3 + triangle_idx * 3 + 0, num_vertices * 3 + triangle_idx * 3 + 1, num_vertices * 3 + triangle_idx * 3 + 2]))
+            global_vertices.append(np.array([vertices[triangle[0]], vertices[triangle[1]], vertices[triangle[2]]]))
+
+    return np.concatenate(global_vertices), np.stack(global_triangles)
+    # ###############
