@@ -14,8 +14,15 @@ def export_mesh_to_obj(path, vertices, faces):
     # write faces starting with "f "
 
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+    # DONE: Implement
+    with open(path, 'w') as fh:
+        for v in vertices:
+            fh.write("v {} {} {}\n".format(*v))
+        
+        for f in faces:
+            fh.write("v {} {} {}\n".format(*(f + 1)))
+
+
     # ###############
 
 
@@ -28,6 +35,8 @@ def export_pointcloud_to_obj(path, pointcloud):
     """
 
     # ###############
-    # TODO: Implement
-    raise NotImplementedError
+    # DONE: Implement
+    with open(path, 'w') as fh:
+        for v in pointcloud:
+            fh.write("v {} {} {}\n".format(*v))
     # ###############

@@ -20,19 +20,26 @@ Given a point calculate the SDF function for:
 
 Sphere            |  Torus
 :-------------------------:|:-------------------------:
-![sphere](./E1/images/marching-cubes-sphere.png) | ![sphere](./E1/images/marching-cubes-torus.png)
+![sphere](./E1/images/marching-cubes-sphere.png) | ![torus](./E1/images/marching-cubes-torus.png)
 
 Atom            |  MLP
 :-------------------------:|:-------------------------:
-![sphere](./E1/images/marching-cubes-atom.png) | ![sphere](./E1/images/marching-cubes-mlp.png)
+![atom](./E1/images/marching-cubes-atom.png) | ![mlp](./E1/images/marching-cubes-mlp.png)
 
 - Vertex Interpolation
 - Export triangle meshes as `Wavefront OJB`
 ### Conversion from Triangle Meshes to Point Clouds
 - Sample n points using barycentric coordinates for each triangle
 - Export point cloud as `Wavefront OBJ`
+
+![sphere](./E1/images/atom-point-cloud.png)
+
 ### Rigid Shape Alignment with Procrustes
 - align two shapes given near-perfect point correspondences using procrustes
+
+Before            |  After
+:-------------------------:|:-------------------------:
+![before](./E1/images/alignment-before.png) | ![after](./E1/images/alignment-after.png)
 
 ---
 ## Shape Classification and Segmentation
