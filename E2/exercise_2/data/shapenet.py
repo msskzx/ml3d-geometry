@@ -37,11 +37,11 @@ class ShapeNetVox(torch.utils.data.Dataset):
                  "label", a number in [0, 12] representing the class of the shape
         """
         # TODO Get item associated with index, get class, load voxels with ShapeNetVox.get_shape_voxels
-        item = None
+        item = self.items[index]
         # Hint: since shape names are in the format "<shape_class>/<shape_identifier>", the first part gives the class
-        item_class = None
+        item_class = item.split('/')[0]
         # read voxels from binvox format on disk as 3d numpy arrays
-        voxels = None
+        voxels = self.get_shape_voxels(item)
         return {
             "name": item,
             "voxel": voxels[np.newaxis, :, :, :],  # we add an extra dimension as the channel axis, since pytorch 3d tensors are Batch x Channel x Depth x Height x Width
@@ -53,7 +53,7 @@ class ShapeNetVox(torch.utils.data.Dataset):
         :return: length of the dataset
         """
         # TODO Implement
-        return
+        return len(self.items)
 
     @staticmethod
     def move_batch_to_device(batch, device):
