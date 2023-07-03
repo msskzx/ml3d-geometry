@@ -36,7 +36,7 @@ class ShapeNetVox(torch.utils.data.Dataset):
                  "voxel", a 1x32x32x32 numpy float32 array representing the shape
                  "label", a number in [0, 12] representing the class of the shape
         """
-        # TODO Get item associated with index, get class, load voxels with ShapeNetVox.get_shape_voxels
+        # DONE Get item associated with index, get class, load voxels with ShapeNetVox.get_shape_voxels
         item = self.items[index]
         # Hint: since shape names are in the format "<shape_class>/<shape_identifier>", the first part gives the class
         item_class = item.split('/')[0]
@@ -52,7 +52,7 @@ class ShapeNetVox(torch.utils.data.Dataset):
         """
         :return: length of the dataset
         """
-        # TODO Implement
+        # DONE Implement
         return len(self.items)
 
     @staticmethod

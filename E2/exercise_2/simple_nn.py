@@ -8,7 +8,7 @@ from exercise_2.util.toy_data import generate_toy_data
 
 
 class SimpleDataset(torch.utils.data.Dataset):
-    # TODO: Implement __init__, __getitem__, __len__
+    # DONE: Implement __init__, __getitem__, __len__
     def __init__(self, phase='train'):
         super().__init__()
         assert phase in ['train', 'val']
@@ -30,7 +30,7 @@ class SimpleModel(torch.nn.Module):
             nn.Conv3d(in_channels=1, out_channels=4, kernel_size=4, stride=3, padding=1),
             nn.BatchNorm3d(4),
             nn.ReLU(),
-            # TODO: Add conv2 and conv3 with the same parameters as conv1; also, add bn2 and bn3,
+            # DONE: Add conv2 and conv3 with the same parameters as conv1; also, add bn2 and bn3,
             nn.Conv3d(in_channels=4, out_channels=8, kernel_size=4, stride=3, padding=1),
             nn.BatchNorm3d(8),
             nn.ReLU(),
@@ -39,26 +39,26 @@ class SimpleModel(torch.nn.Module):
             nn.ReLU()
         )
 
-        # TODO: Add Linear layer for classification which reduces the number of features from 16 to 2
+        # DONE: Add Linear layer for classification which reduces the number of features from 16 to 2
         self.classifier = nn.Sequential(
             nn.Linear(in_features=16, out_features=2),
             nn.ReLU()
         )
 
     def forward(self, x):
-        # TODO: Move tensor through layers 2 and 3
+        # DONE: Move tensor through layers 2 and 3
         x = self.features(x)
-        # TODO: Apply the classification layer. Use .view() to reshape the output of layer 3 into the correct format
+        # DONE: Apply the classification layer. Use .view() to reshape the output of layer 3 into the correct format
         x = x.view(-1, 16)
         x = self.classifier(x)
         return x
 
 
 def train(model, train_dataloader, val_dataloader, device, config):
-    # TODO Declare Loss function; Use CrossEntropyLoss
+    # DONE Declare Loss function; Use CrossEntropyLoss
     loss_criterion = nn.CrossEntropyLoss().to(device)
 
-    # TODO Declare optimizer; Use ADAM with learning rate from config['learning_rate']
+    # DONE Declare optimizer; Use ADAM with learning rate from config['learning_rate']
     optimizer = optim.Adam(model.parameters(), lr=config['learning_rate'])
 
     # Set model to train, important if your network has e.g. dropout or batchnorm layers
@@ -73,7 +73,7 @@ def train(model, train_dataloader, val_dataloader, device, config):
 
         for i, batch in enumerate(train_dataloader):
             input_data, target_labels = batch
-            # TODO Move input_data and target_labels to device
+            # DONE Move input_data and target_labels to device
             input_data = input_data.to(device)
             target_labels = target_labels.to(device)
 
@@ -107,7 +107,7 @@ def train(model, train_dataloader, val_dataloader, device, config):
                 loss_val = 0.
                 for batch_val in val_dataloader:
                     input_data, target_labels = batch_val
-                    # TODO Move input_data and target_labels to device
+                    # DONE Move input_data and target_labels to device
                     input_data = input_data.to(device)
                     target_labels = target_labels.to(device)
 
@@ -143,7 +143,7 @@ def main(config):
         print('Using CPU')
 
     # Create Dataloaders
-    train_dataset = SimpleDataset(phase='train')  # TODO Instantiate Dataset in train split
+    train_dataset = SimpleDataset(phase='train')  # DONE Instantiate Dataset in train split
     train_dataloader = torch.utils.data.DataLoader(
         train_dataset,   # Datasets return data one sample at a time; Dataloaders use them and aggregate samples into batches
         batch_size=config['batch_size'],   # The size of batches is defined here
@@ -152,7 +152,7 @@ def main(config):
         pin_memory=True  # This is an implementation detail to speed up data uploading to the GPU
     )
 
-    val_dataset = SimpleDataset(phase='val')  # TODO Instantiate Dataset in val split
+    val_dataset = SimpleDataset(phase='val')  # DONE Instantiate Dataset in val split
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset,     # Datasets return data one sample at a time; Dataloaders use them and aggregate samples into batches
         batch_size=config['batch_size'],   # The size of batches is defined here
@@ -161,7 +161,7 @@ def main(config):
         pin_memory=True  # This is an implementation detail to speed up data uploading to the GPU
     )
 
-    # TODO Instantiate model and move to device
+    # DONE Instantiate model and move to device
     model = SimpleModel().to(device)
 
     # Create folder for saving checkpoints
