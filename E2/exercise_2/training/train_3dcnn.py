@@ -59,13 +59,13 @@ def main(config):
 def train(model, trainloader, valloader, device, config):
 
     # declare loss and move to specified device
-    # TODO: Define loss
-    loss_criterion = None
+    # DONE: Define loss
+    loss_criterion = torch.nn.CrossEntropyLoss(reduction='mean')
 
     loss_criterion.to(device)
 
-    # TODO: declare optimizer (learning rate provided in config)
-    optimizer = None
+    # DONE: declare optimizer (learning rate provided in config)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
 
     # set model to train, important if your network has e.g. dropout or batchnorm layers
     model.train()
@@ -81,19 +81,23 @@ def train(model, trainloader, valloader, device, config):
             # move batch to device
             ShapeNetVox.move_batch_to_device(batch, device)
 
-            # TODO: zero out previously accumulated gradients
+            # DONE: zero out previously accumulated gradients
+            optimizer.zero_grad()
 
-            # TODO: forward pass
-            prediction = None
+            # DONE: forward pass
+            prediction = model(batch['voxel'])
 
-            # TODO: compute total loss = sum of loss for whole prediction + losses for partial predictions
+            # DONE: compute total loss = sum of loss for whole prediction + losses for partial predictions
             loss_total = torch.zeros([1], dtype=batch['voxel'].dtype, requires_grad=True).to(device)
             for output_idx in range(prediction.shape[1]):
-                loss_total = loss_total + None  # TODO: Loss due to prediction[:, output_idx, :] (output_idx=0 for global prediction, 1-8 local)
+                # DONE: Loss due to prediction[:, output_idx, :] (output_idx=0 for global prediction, 1-8 local)
+                loss_total = loss_total + loss_criterion(prediction[:, output_idx, :], batch['label'])
 
-            # TODO: compute gradients on loss_total (backward pass)
+            # DONE: compute gradients on loss_total (backward pass)
+            loss_total.backward()
 
-            # TODO: update network params
+            # DONE: update network params
+            optimizer.step()
 
             # loss logging
             train_loss_running += loss_total.item()
@@ -116,13 +120,18 @@ def train(model, trainloader, valloader, device, config):
                     ShapeNetVox.move_batch_to_device(batch_val, device)
 
                     with torch.no_grad():
-                        # TODO: Get prediction scores
-                        prediction = None
+                        # DONE: Get prediction scores
+                        prediction = model(batch_val['voxel'])
 
-                    # TODO: Get predicted labels from scores
-                    predicted_label = None
+                    # DONE: Get predicted labels from scores
+                    _, predicted_label = torch.max(prediction[:, 0, :], dim=1)
 
-                    # TODO: keep track of total / correct / loss_total_val
+                    # DONE: keep track of total / correct / loss_total_val
+                    total += predicted_label.shape[0]
+                    correct += (predicted_label == batch_val['label']).sum().item()
+
+                    for output_idx in range(prediction.shape[1]):
+                        loss_total_val += loss_criterion(prediction[:, output_idx, :], batch_val['label']).item()
 
                 accuracy = 100 * correct / total
 
