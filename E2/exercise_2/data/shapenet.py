@@ -82,25 +82,30 @@ class ShapeNetPoints(torch.utils.data.Dataset):
     class_name_mapping = json.loads(Path("exercise_2/data/shape_info.json").read_text())  # mapping for ShapeNet ids -> names
     classes = sorted(class_name_mapping.keys())
 
-    def __init__(self):
-        # TODO Read sample IDs from the correct split file and store in self.items
-        pass
+    def __init__(self, split):
+        # DONE Read sample IDs from the correct split file and store in self.items
+        super().__init__()
+        assert split in ['train', 'val', 'overfit']
+
+        # keep track of shapes based on split
+        self.items = Path(f"exercise_2/data/splits/shapenet/{split}.txt").read_text().splitlines()
+
 
     def __getitem__(self, index):
-        # TODO Get item associated with index, get class, load points with ShapeNetPoints.get_point_cloud
-
+        # DONE Get item associated with index, get class, load points with ShapeNetPoints.get_point_cloud
+        item = self.items[index]
         # Hint: Since shape names are in the format "<shape_class>/<shape_identifier>", the first part gives the class
-        item_class = None
+        item_class = item.split('/')[0]
 
         return {
-            "name": None,  # The item ID
-            "points": None,
+            "name": item,  # The item ID
+            "points": ShapeNetPoints.get_point_cloud(item),
             "label": ShapeNetPoints.classes.index(item_class)  # Label is 0 indexed position in sorted class list, e.g. 02691156 is label 0, 02828884 is label 1 and so on.
         }
 
     def __len__(self):
-        # TODO Implement
-        pass
+        # DONE Implement
+        return len(self.items)
 
     @staticmethod
     def move_batch_to_device(batch, device):
@@ -120,5 +125,6 @@ class ShapeNetPoints(torch.utils.data.Dataset):
         """
         category_id, shape_id = shapenet_id.split('/')
 
-        # TODO Implement
-        pass
+        # DONE Implement
+        point_cloud = trimesh.load(ShapeNetPoints.dataset_path / f'{shapenet_id}.obj')
+        return np.array(point_cloud.vertices).T.astype(np.float32)
