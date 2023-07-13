@@ -49,7 +49,17 @@ class ShapeNetParts(torch.utils.data.Dataset):
         """
         category_id, shape_id = shapenet_id.split('/')
 
-        # TODO: Load point cloud and segmentation labels, subsample to 1024 points. Make sure points and labels still correspond afterwards!
-        # TODO: Important: Use ShapeNetParts.part_id_to_overall_id to convert the part labels you get from the .seg files from local to global ID as they start at 0 for each shape class whereas we want to predict the overall part class.
+        # DONE: Load point cloud and segmentation labels, subsample to 1024 points. Make sure points and labels still correspond afterwards!
+        # DONE: Important: Use ShapeNetParts.part_id_to_overall_id to convert the part labels you get from the .seg files from local to global ID as they start at 0 for each shape class whereas we want to predict the overall part class.
         # ShapeNetParts.part_id_to_overall_id converts an ID in form <shapenetclass_partlabel> to and integer representing the global part class id
-        pass
+        
+        point_cloud = np.loadtxt(ShapeNetParts.dataset_path / category_id / 'points' / f'{shape_id}.pts')
+        used_point_indices = np.random.choice(range(point_cloud.shape[0]), ShapeNetParts.num_points)
+        segementation_labels = np.array([ShapeNetParts.part_id_to_overall_id[f'{category_id}_{part_idx}'] for part_idx in np.loadtxt(ShapeNetParts.dataset_path / category_id / 'points_label' / f'{shape_id}.seg').astype(np.int64)])
+
+        # sampled point cloud
+        point_cloud = point_cloud[used_point_indices]
+        # corresponding labels
+        segementation_labels = segementation_labels[used_point_indices]
+
+        return point_cloud.T.astype(np.float32), segementation_labels        
