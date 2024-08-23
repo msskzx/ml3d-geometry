@@ -2,10 +2,16 @@
 
 ## Outline
 
+- 3D Shape Reconstruction
 - Shape Classification and Segmentation
 - Surface Representation and Alignment
-- 3D Shape Reconstruction
 - References
+
+## 3D Shape Reconstruction
+
+Using 3D-Encoder-Predictor CNNs (3D-EPN) [1] which takes incomplete shape observation as distance field and state and encodes it into a latent space then uses a predictor to generate unsigned distance field of the complete shape. The output shape is further enhanced using a post-processing step where a shape database is used to sample parts to increase the output shape resolution.
+
+![alt text](E3/exercise_3/images/3depn_teaser.png)
 
 ## Shape Classification and Segmentation
 
@@ -70,12 +76,6 @@ Align two shapes given near-perfect point correspondences using procrustes
 Before            |  After
 :-------------------------:|:-------------------------:
 ![before](./E1/images/alignment-before.png) | ![after](./E1/images/alignment-after.png)
-
-## 3D Shape Reconstruction
-
-Using 3D-Encoder-Predictor CNNs (3D-EPN) [1] which takes incomplete shape observation as distance field and state and encodes it into a latent space then uses a predictor to generate unsigned distance field of the complete shape. The output shape is further enhanced using a post-processing step where a shape database is used to sample parts to increase the output shape resolution.
-
-![alt text](E3/exercise_3/images/3depn_teaser.png)
 
 ## References
 
